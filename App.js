@@ -1,35 +1,42 @@
 import React from 'react';
 import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
-
+// import numeral from 'numeral';
 import useApp from './useApp';
 
 const App = () => {
-  const {datetime} = useApp();
-  if (!datetime) {
-    return null;
-  }
+  const {
+    date,
+    time,
+    month,
+    state,
+    count,
+    // countdown,
+    countdownText,
+    // onStartClick,
+    // onStopClick,
+    // onCancelClick,
+    // onIgnoreClick,
+  } = useApp();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.datetime}>
         <View style={styles.dateView}>
-          <Text style={styles.dateText}>{datetime.format('MMMM  dddd')}</Text>
-          <Text style={styles.dateText}>
-            {datetime.format('YYYY 年 MM 月 DD 日')}
-          </Text>
+          <Text style={styles.dateText}>{month}</Text>
+          <Text style={styles.dateText}>{date}</Text>
         </View>
-        <View style={styles.timeView}>
-          <Text style={styles.timeText}>{datetime.format('HH:mm:ss')}</Text>
+        <View style={styles.countdownView}>
+          <Text style={styles.countdownText}>{countdownText}</Text>
         </View>
       </View>
-      <View style={styles.countdown}>
-        <View style={styles.countdownView}>
-          <Text style={styles.countdownText}>25 : 00</Text>
+      <View style={styles.time}>
+        <View style={styles.timeView}>
+          <Text style={styles.timeText}>{time}</Text>
         </View>
       </View>
       <View style={styles.button}>
         <View style={styles.buttonView}>
-          {/* <Text style={styles.buttonText}>25 : 00</Text>
-          <Text style={styles.buttonText}>25 : 00</Text> */}
+          <Text style={styles.buttonText}>{state}</Text>
+          <Text style={styles.buttonText}>{count}</Text>
         </View>
       </View>
     </SafeAreaView>
@@ -40,7 +47,8 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: '#1f1c1d',
     flex: 1,
-    padding: 16,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     display: 'flex',
     justifyContent: 'space-between',
   },
@@ -57,22 +65,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'darkgray',
   },
-  timeView: {
+  countdownView: {
     flex: 1,
   },
-  timeText: {
+  countdownText: {
     fontSize: 50,
     textAlign: 'right',
     fontWeight: '500',
     color: 'lightgray',
   },
-  countdown: {
+  time: {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countdownView: {
+  timeView: {
     backgroundColor: '#333',
     display: 'flex',
     alignItems: 'center',
@@ -82,13 +90,17 @@ const styles = StyleSheet.create({
     paddingLeft: 32,
     paddingRight: 32,
   },
-  countdownText: {
+  timeText: {
     fontSize: 120,
     color: 'ghostwhite',
     textAlign: 'center',
   },
   button: {
     minHeight: 64,
+  },
+  buttonText: {
+    fontSize: 16,
+    color: 'darkgray',
   },
 });
 
