@@ -1,8 +1,8 @@
 import React from 'react';
 import {SafeAreaView, StyleSheet, Text, View, Pressable} from 'react-native';
 import useApp from './useApp';
-import useRing from './useRing';
-import Button from './Button';
+import useRing from '../ring/useRing';
+import Button from '../Button';
 
 const App = () => {
   const {
@@ -19,19 +19,19 @@ const App = () => {
   } = useApp();
 
   useRing({
-    src: require('./ring/滴答.mp3'),
+    src: require('../ring/滴答.mp3'),
     paused: state !== '工作',
     volume: 0.8,
   });
 
   useRing({
-    src: require('./ring/教堂钟声.mp3'),
+    src: require('../ring/教堂钟声.mp3'),
     paused: state !== '结束铃',
     volume: 1.0,
   });
 
   useRing({
-    src: require('./ring/教堂钟声.mp3'),
+    src: require('../ring/教堂钟声.mp3'),
     paused: state !== '开始铃',
     volume: 0.8,
   });
@@ -42,12 +42,6 @@ const App = () => {
         <View style={styles.dateView}>
           <Text style={styles.dateText}>{month}</Text>
           <Text style={styles.dateText}>{date}</Text>
-        </View>
-        <View style={styles.tip}>
-          {/* <Text style={styles.tipText}>
-            {(state === '工作' || state === '延迟') && '专心工作'}
-            {(state === '小憩' || state === '推迟') && '多喝热水'}
-          </Text> */}
         </View>
         <View style={styles.countdownView}>
           <Text style={styles.countdownText}>
@@ -139,15 +133,6 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     color: 'darkgray',
-  },
-  tip: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  tipText: {
-    textAlign: 'center',
-    fontSize: 24,
-    color: 'crimson',
   },
   countdownView: {
     flex: 1,

@@ -49,9 +49,7 @@ function useRing({src, paused, volume = 1.0}) {
 
   React.useEffect(() => {
     ref.current.paused = paused;
-    console.log('paused: ', paused);
     if (!ref.current.sound) {
-      console.log('!ref.current.sound');
       return;
     }
     changePlayState(ref.current.sound, paused);
