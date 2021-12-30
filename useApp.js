@@ -32,12 +32,12 @@ function useApp() {
 
   const nextList = React.useMemo(
     () => ({
-      休息: {state: '开始铃', value: 10, unit: 'second'},
+      休息: {state: '开始铃', value: 4, unit: 'second'},
       开始铃: {state: '推迟', value: 10, unit: 'minute'},
-      小憩: {state: '开始铃', value: 10, unit: 'second'},
-      推迟: {state: '开始铃', value: 10, unit: 'second'},
-      工作: {state: '结束铃', value: 5, unit: 'second'},
-      延迟: {state: '结束铃', value: 5, unit: 'second'},
+      小憩: {state: '开始铃', value: 4, unit: 'second'},
+      推迟: {state: '开始铃', value: 4, unit: 'second'},
+      工作: {state: '结束铃', value: 2, unit: 'second'},
+      延迟: {state: '结束铃', value: 2, unit: 'second'},
       结束铃: {state: '延迟', value: 10, unit: 'minute'},
       忽略: {state: '休息', value: 30, unit: 'minute'},
     }),
@@ -129,7 +129,7 @@ function useApp() {
   }, [dispatch, checkCountdown]);
 
   const onStartClick = React.useCallback(() => {
-    console.log('onStartClick');
+    // console.log('onStartClick');
     ref.current.countdown = dayjs().add(25, 'minute');
     dispatch({type: 'update', payload: {state: '工作'}});
   }, [dispatch]);

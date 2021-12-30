@@ -5413,6 +5413,11 @@ react-native-codegen@^0.0.7:
     jscodeshift "^0.11.0"
     nullthrows "^1.1.1"
 
+react-native-sound@^0.11.1:
+  version "0.11.1"
+  resolved "https://registry.nlark.com/react-native-sound/download/react-native-sound-0.11.1.tgz#e28427b3543fbf9fc6d7c96b27e79b27cd134e95"
+  integrity sha1-4oQns1Q/v5/G18lrJ+ebJ80TTpU=
+
 react-native@0.66.4:
   version "0.66.4"
   resolved "https://registry.npmmirror.com/react-native/download/react-native-0.66.4.tgz#bf89a5fb18bd23046d889fb4de4ea2822a4d7805"

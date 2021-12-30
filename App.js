@@ -2,7 +2,10 @@ import React from 'react';
 import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 // import numeral from 'numeral';
 import useApp from './useApp';
+import useRing from './useRing';
 import Button from './Button';
+// import Ring from './Ring';
+// import clock from './clock.mp3';
 
 const App = () => {
   const {
@@ -16,8 +19,27 @@ const App = () => {
     onFinishClick,
     onCancelClick,
     onIgnoreClick,
-    onRestClick,
+    // onRestClick,
   } = useApp();
+
+  useRing({
+    src: require('./ring/滴答.mp3'),
+    paused: state !== '工作',
+    volume: 0.8,
+  });
+
+  useRing({
+    src: require('./ring/教堂钟声.mp3'),
+    paused: state !== '结束铃',
+    volume: 1.0,
+  });
+
+  useRing({
+    src: require('./ring/教堂钟声.mp3'),
+    paused: state !== '开始铃',
+    volume: 0.8,
+  });
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.datetime}>
@@ -32,9 +54,13 @@ const App = () => {
         </View>
       </View>
       <View style={styles.time}>
+        {/* <View style={styles.timeLeftView} /> */}
         <View style={styles.timeView}>
           <Text style={styles.timeText}>{time}</Text>
         </View>
+        {/* <View style={styles.timeRightView}>
+          <Ring src={require('./clock.mp3')} />
+        </View> */}
       </View>
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
@@ -85,36 +111,12 @@ const App = () => {
         </View>
         <View style={styles.footerRight}>
           <View style={styles.footerRightView}>
-            {state === '开始铃' && (
-              <Button
-                style={styles.footerRightButton}
-                text={{fontSize: 16, color: 'lightgray'}}
-                onPress={onRestClick}
-                title="推迟"
-              />
-            )}
-            {(state === '休息' || state === '推迟') && (
-              <Button
-                style={styles.footerRightButton}
-                text={{fontSize: 16, color: 'lightgray'}}
-                onPress={onRestClick}
-                title="休息"
-              />
-            )}
             {(state === '开始铃' || state === '推迟') && (
               <Button
                 style={styles.footerRightButton}
                 text={{fontSize: 16, color: 'lightgray'}}
                 onPress={onIgnoreClick}
                 title="忽略"
-              />
-            )}
-            {state === '结束铃' && (
-              <Button
-                style={styles.footerRightButton}
-                text={{fontSize: 16, color: 'lightgray'}}
-                onPress={onRestClick}
-                title="延迟"
               />
             )}
             <Button
@@ -140,7 +142,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   datetime: {
-    height: 96,
+    height: 64,
     display: 'flex',
     alignItems: 'flex-start',
     flexDirection: 'row',
@@ -157,9 +159,9 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   countdownText: {
-    fontSize: 48,
+    fontSize: 36,
     textAlign: 'right',
-    fontWeight: '500',
+    fontWeight: '400',
     color: 'lightgray',
   },
   time: {
@@ -169,13 +171,19 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     justifyContent: 'center',
   },
+  timeLeftView: {
+    flex: 1,
+  },
+  timeRightView: {
+    flex: 1,
+  },
   timeView: {
     backgroundColor: '#3f3f3f',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
-    paddingHorizontal: 32,
+    paddingHorizontal: 40,
   },
   timeText: {
     fontSize: 120,
@@ -183,18 +191,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   footer: {
-    height: 96,
+    height: 84,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-end',
+    marginBottom: 16,
   },
   footerLeft: {
-    flex: 1,
+    flex: 2,
     display: 'flex',
     justifyContent: 'flex-end',
   },
   footerLeftText: {
-    fontSize: 14,
+    fontSize: 10,
     color: 'darkgray',
   },
   textHighlight: {
@@ -203,7 +212,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   footerCenter: {
-    flex: 1,
+    flex: 3,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
@@ -213,11 +222,11 @@ const styles = StyleSheet.create({
   footerCenterButton: {
     display: 'flex',
     backgroundColor: 'crimson',
-    minHeight: 64,
+    minHeight: 56,
     width: '100%',
   },
   footerRight: {
-    flex: 1,
+    flex: 2,
     display: 'flex',
   },
   footerRightView: {
@@ -231,7 +240,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2f2f2f',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    marginLeft: 8,
+    marginLeft: 16,
     fontSize: 16,
   },
 });
