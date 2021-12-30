@@ -14,7 +14,6 @@ const initialState = {
   // state: 'sleep', // 'sleep', 'reminding', 'waiting', 'working', 'ringing', 'rest', 'ignore'
   state: '休息', // '休息', '开始铃', '推迟', '工作', '延迟', '结束铃', '小憩', '忽略'
   count: 0,
-  // countdown: '25:00',
   countdownText: '25:00',
 };
 
@@ -128,23 +127,44 @@ function useApp() {
     checkCountdown(datetime);
   }, [dispatch, checkCountdown]);
 
-  const onStartClick = React.useCallback(() => {
-    // console.log('onStartClick');
-    ref.current.countdown = dayjs().add(25, 'minute');
-    dispatch({type: 'update', payload: {state: '工作'}});
+  const title = React.useMemo(() => {
+    switch (state) {
+      case '工作':
+        return '取消';
+      case '结束铃':
+      case '延迟':
+        return '开始休息';
+      case '休息':
+      case '开始铃':
+      case '推迟':
+      case '小憩':
+      default:
+        return '开始';
+    }
+  }, [state]);
+
+  const onPress = React.useCallback(() => {
+    switch (ref.current.state) {
+      case '工作':
+        ref.current.countdown = dayjs().add(5, 'minute');
+        dispatch({type: 'update', payload: {state: '小憩'}});
+        break;
+      case '结束铃':
+      case '延迟':
+        const finished = ref.current.count + 1;
+        const value = finished % 4 === 0 ? 15 : 5;
+        ref.current.countdown = dayjs().add(value, 'minute');
+        dispatch({type: 'update', payload: {state: '小憩', count: finished}});
+        break;
+      case '休息':
+      case '开始铃':
+      case '推迟':
+      case '小憩':
+      default:
+        ref.current.countdown = dayjs().add(25, 'minute');
+        dispatch({type: 'update', payload: {state: '工作'}});
+    }
   }, [dispatch]);
-
-  const onFinishClick = React.useCallback(() => {
-    const finished = ref.current.count + 1;
-    const value = finished % 4 === 0 ? 15 : 5;
-    ref.current.countdown = dayjs().add(value, 'minute');
-    dispatch({type: 'update', payload: {state: '小憩', count: finished}});
-  }, []);
-
-  const onRestClick = React.useCallback(() => {
-    ref.current.countdown = dayjs().add(15, 'minute');
-    dispatch({type: 'update', payload: {state: '小憩'}});
-  }, []);
 
   const onCancelClick = React.useCallback(() => {
     ref.current.countdown = dayjs().add(5, 'minute');
@@ -152,6 +172,7 @@ function useApp() {
   }, []);
 
   const onIgnoreClick = React.useCallback(() => {
+    // TODO: 忽略倒计时
     delete ref.current.countdown;
     dispatch({type: 'update', payload: {state: '忽略'}});
   }, []);
@@ -164,7 +185,7 @@ function useApp() {
   React.useEffect(() => {
     const id = global.setInterval(() => {
       update();
-    }, 500);
+    }, 200);
     return () => {
       global.clearInterval(id);
     };
@@ -174,7 +195,6 @@ function useApp() {
     if (!ref.current.datetime) {
       return;
     }
-    console.log('新的一天开始了！！！');
     ref.current.list = [
       {
         min: dayjs().hour(9).minute(20).second(0).millisecond(0),
@@ -202,13 +222,11 @@ function useApp() {
     month,
     state,
     count,
-    // countdown,
     countdownText,
-    onStartClick,
-    onFinishClick,
+    title,
+    onPress,
     onCancelClick,
     onIgnoreClick,
-    onRestClick,
   };
 }
 
