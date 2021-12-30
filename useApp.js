@@ -11,9 +11,10 @@ const initialState = {
   date: '',
   time: '00:00',
   month: '',
-  state: 'sleep', // 'sleep', 'reminding', 'waiting', 'working', 'ringing', 'rest', 'ignore'
+  // state: 'sleep', // 'sleep', 'reminding', 'waiting', 'working', 'ringing', 'rest', 'ignore'
+  state: '休息', // '休息', '开始铃', '推迟', '工作', '延迟', '结束铃', '小憩', '忽略'
   count: 0,
-  countdown: '25:00',
+  // countdown: '25:00',
   countdownText: '25:00',
 };
 
@@ -25,107 +26,140 @@ const reducer = (state, action) => {
 };
 
 function useApp() {
-  const [
-    {date, time, month, state, count, countdown, countdownText},
-    dispatch,
-  ] = React.useReducer(reducer, initialState);
+  const [{date, time, month, state, count, countdownText}, dispatch] =
+    React.useReducer(reducer, initialState);
   const ref = React.useRef({});
 
-  const check = React.useCallback(datetime => {
-    const payload = {};
-    if (!datetime) {
-      return payload;
-    }
-    switch (ref.current.state) {
-      case 'sleep':
-        const index = (ref.current.list || []).findIndex(it =>
-          datetime.isBetween(it.min, it.max),
-        );
-        if (index >= 0) {
-          payload.state = 'reminding';
-          ref.current.countdown = dayjs().add(30, 'second');
-        }
-        break;
-      case 'reminding':
-        if (datetime.isAfter(ref.current.countdown)) {
-          payload.state = 'waiting';
-          ref.current.countdown = dayjs().add(10, 'minute');
-        }
-        break;
-      case 'waiting':
-        if (datetime.isAfter(ref.current.countdown)) {
-          payload.state = 'reminding';
-          ref.current.countdown = dayjs().add(30, 'second');
-        }
-        break;
-      case 'working':
-        if (datetime.isAfter(ref.current.countdown)) {
-          payload.state = 'ringing';
-          ref.current.countdown = dayjs().add(5, 'second');
-        }
-        break;
-      case 'ringing':
-        if (datetime.isAfter(ref.current.countdown)) {
-          payload.state = 'working';
-          ref.current.countdown = dayjs().add(10, 'minute');
-        }
-        break;
-      case 'rest':
-        if (datetime.isAfter(ref.current.countdown)) {
-          payload.state = 'waiting';
-          ref.current.countdown = dayjs().add(10, 'second');
-        }
-        break;
-      case 'ignore':
-        break;
-      default:
-      //
-    }
-    if (ref.current.countdown) {
-      ref.current.countdownText = dayjs
-        .duration(ref.current.datetime.diff(ref.current.countdown))
-        .format('mm:ss');
-    }
-    return payload;
+  const nextList = React.useMemo(
+    () => ({
+      休息: {state: '开始铃', value: 10, unit: 'second'},
+      开始铃: {state: '推迟', value: 10, unit: 'minute'},
+      小憩: {state: '开始铃', value: 10, unit: 'second'},
+      推迟: {state: '开始铃', value: 10, unit: 'second'},
+      工作: {state: '结束铃', value: 5, unit: 'second'},
+      延迟: {state: '结束铃', value: 5, unit: 'second'},
+      结束铃: {state: '延迟', value: 10, unit: 'minute'},
+      忽略: {state: '休息', value: 30, unit: 'minute'},
+    }),
+    [],
+  );
+
+  const isRestFinished = React.useCallback(datetime => {
+    const index = (ref.current.list || []).findIndex(it =>
+      datetime.isBetween(it.min, it.max),
+    );
+    return index !== -1;
   }, []);
 
+  const isFinished = React.useCallback(
+    (currentTime, countdownTime) =>
+      currentTime && countdownTime && currentTime.isAfter(countdownTime),
+    [],
+  );
+
+  const getRestCountdown = React.useCallback(currentTime => {
+    if (!ref.current.list || ref.current.list.length === 0) {
+      return dayjs().hour(24).minute(0).second(0).millisecond(0);
+    }
+    const item = ref.current.list.find(it => it.min.isAfter(currentTime));
+    if (item) {
+      return item.min.clone();
+    }
+    return ref.current.list[0].min
+      .clone()
+      .hour(24)
+      .minute(0)
+      .second(0)
+      .millisecond(0);
+  }, []);
+
+  const checkCountdown = React.useCallback(
+    datetime => {
+      if (!datetime) {
+        return;
+      }
+      const info = nextList[ref.current.state];
+      if (!info) {
+        return;
+      }
+      if (ref.current.state === '休息') {
+        if (isRestFinished(datetime)) {
+          ref.current.countdown = dayjs().add(info.value, info.unit);
+          dispatch({type: 'update', payload: {state: info.state}});
+        }
+      } else if (ref.current.state === '忽略') {
+        if (!isRestFinished(datetime)) {
+          ref.current.countdown = getRestCountdown(datetime);
+          dispatch({type: 'update', payload: {state: info.state}});
+        }
+      } else if (ref.current.state === '开始铃') {
+        // 开始铃结束后检查是否时休息时间
+        // 如果是休息时间则状态切换为休息，否者切换为延迟
+        if (isFinished(datetime, ref.current.countdown)) {
+          if (isRestFinished(datetime)) {
+            ref.current.countdown = dayjs().add(info.value, info.unit);
+            dispatch({type: 'update', payload: {state: info.state}});
+          } else {
+            ref.current.countdown = getRestCountdown(datetime);
+            dispatch({type: 'update', payload: {state: '休息'}});
+          }
+        }
+      } else if (isFinished(datetime, ref.current.countdown)) {
+        ref.current.countdown = dayjs().add(info.value, info.unit);
+        dispatch({type: 'update', payload: {state: info.state}});
+      }
+      if (ref.current.countdown) {
+        const du = dayjs.duration(ref.current.countdown.diff(datetime));
+        dispatch({
+          type: 'update',
+          payload: {countdownText: du.format('HH:mm:ss').replace(/^00:/, '')},
+        });
+      }
+    },
+    [nextList, isRestFinished, isFinished, getRestCountdown],
+  );
+
   const update = React.useCallback(() => {
-    ref.current.datetime = dayjs();
-    const payload = check(ref.current.datetime);
-    dispatch({
-      type: 'update',
-      payload: {
-        date: ref.current.datetime.format('YYYY 年 MM 月 DD 日'),
-        time: ref.current.datetime.format('HH:mm'),
-        ...payload,
-      },
-    });
-  }, [dispatch, check]);
+    const datetime = dayjs();
+    ref.current.datetime = datetime;
+    const dateText = ref.current.datetime.format('YYYY 年 MM 月 DD 日');
+    const timeText = ref.current.datetime.format('HH:mm');
+    dispatch({type: 'update', payload: {date: dateText, time: timeText}});
+    checkCountdown(datetime);
+  }, [dispatch, checkCountdown]);
 
   const onStartClick = React.useCallback(() => {
+    console.log('onStartClick');
     ref.current.countdown = dayjs().add(25, 'minute');
-    dispatch({type: 'update', payload: {state: 'working'}});
+    dispatch({type: 'update', payload: {state: '工作'}});
   }, [dispatch]);
 
-  const onStopClick = React.useCallback(() => {
-    ref.current.countdown = dayjs().add(5, 'minute');
-    dispatch({type: 'update', payload: {state: 'rest'}});
+  const onFinishClick = React.useCallback(() => {
+    const finished = ref.current.count + 1;
+    const value = finished % 4 === 0 ? 15 : 5;
+    ref.current.countdown = dayjs().add(value, 'minute');
+    dispatch({type: 'update', payload: {state: '小憩', count: finished}});
+  }, []);
+
+  const onRestClick = React.useCallback(() => {
+    ref.current.countdown = dayjs().add(15, 'minute');
+    dispatch({type: 'update', payload: {state: '小憩'}});
   }, []);
 
   const onCancelClick = React.useCallback(() => {
     ref.current.countdown = dayjs().add(5, 'minute');
-    dispatch({type: 'update', payload: {state: 'rest'}});
+    dispatch({type: 'update', payload: {state: '小憩'}});
   }, []);
 
   const onIgnoreClick = React.useCallback(() => {
     delete ref.current.countdown;
-    dispatch({type: 'update', payload: {state: 'ignore'}});
+    dispatch({type: 'update', payload: {state: '忽略'}});
   }, []);
 
   React.useEffect(() => {
     ref.current.state = state;
-    // ref.current.countdown = countdown;
-  }, [state]);
+    ref.current.count = count;
+  }, [state, count]);
 
   React.useEffect(() => {
     const id = global.setInterval(() => {
@@ -140,6 +174,7 @@ function useApp() {
     if (!ref.current.datetime) {
       return;
     }
+    console.log('新的一天开始了！！！');
     ref.current.list = [
       {
         min: dayjs().hour(9).minute(20).second(0).millisecond(0),
@@ -152,11 +187,14 @@ function useApp() {
     ];
     const payload = {
       month: ref.current.datetime.format('MMMM  dddd'),
-      state: 'sleep',
+      state: '休息',
       count: 0,
+      countdownText: '00:00',
     };
+    // TODO: 休息也显示倒计时
+    ref.current.countdown = getRestCountdown(ref.current.datetime);
     dispatch({type: 'update', payload});
-  }, [dispatch, date]);
+  }, [dispatch, date, getRestCountdown]);
 
   return {
     date,
@@ -164,12 +202,13 @@ function useApp() {
     month,
     state,
     count,
-    countdown,
+    // countdown,
     countdownText,
     onStartClick,
-    onStopClick,
+    onFinishClick,
     onCancelClick,
     onIgnoreClick,
+    onRestClick,
   };
 }
 

@@ -2,6 +2,7 @@ import React from 'react';
 import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 // import numeral from 'numeral';
 import useApp from './useApp';
+import Button from './Button';
 
 const App = () => {
   const {
@@ -10,12 +11,12 @@ const App = () => {
     month,
     state,
     count,
-    // countdown,
     countdownText,
-    // onStartClick,
-    // onStopClick,
-    // onCancelClick,
-    // onIgnoreClick,
+    onStartClick,
+    onFinishClick,
+    onCancelClick,
+    onIgnoreClick,
+    onRestClick,
   } = useApp();
   return (
     <SafeAreaView style={styles.container}>
@@ -25,7 +26,9 @@ const App = () => {
           <Text style={styles.dateText}>{date}</Text>
         </View>
         <View style={styles.countdownView}>
-          <Text style={styles.countdownText}>{countdownText}</Text>
+          <Text style={styles.countdownText}>
+            {state} {countdownText}
+          </Text>
         </View>
       </View>
       <View style={styles.time}>
@@ -33,10 +36,94 @@ const App = () => {
           <Text style={styles.timeText}>{time}</Text>
         </View>
       </View>
-      <View style={styles.button}>
-        <View style={styles.buttonView}>
-          <Text style={styles.buttonText}>{state}</Text>
-          <Text style={styles.buttonText}>{count}</Text>
+      <View style={styles.footer}>
+        <View style={styles.footerLeft}>
+          <Text style={styles.footerLeftText}>
+            今天已完成
+            <Text style={styles.textHighlight}>
+              &nbsp;&nbsp;{count}&nbsp;&nbsp;
+            </Text>
+            个番茄时段
+          </Text>
+          <Text style={styles.footerLeftText}>
+            离长休还有
+            <Text style={styles.textHighlight}>
+              &nbsp;&nbsp;{4 - (count % 4)}&nbsp;&nbsp;
+            </Text>
+            个番茄时段
+          </Text>
+        </View>
+        <View style={styles.footerCenter}>
+          {(state === '休息' ||
+            state === '开始铃' ||
+            state === '推迟' ||
+            state === '小憩' ||
+            state === '忽略') && (
+            <Button
+              style={styles.footerCenterButton}
+              text={{fontSize: 32}}
+              onPress={onStartClick}
+              title="开始"
+            />
+          )}
+          {state === '工作' && (
+            <Button
+              style={styles.footerCenterButton}
+              text={{fontSize: 32}}
+              onPress={onCancelClick}
+              title="取消"
+            />
+          )}
+          {(state === '结束铃' || state === '延迟') && (
+            <Button
+              style={styles.footerCenterButton}
+              text={{fontSize: 32}}
+              onPress={onFinishClick}
+              title="开始休息"
+            />
+          )}
+        </View>
+        <View style={styles.footerRight}>
+          <View style={styles.footerRightView}>
+            {state === '开始铃' && (
+              <Button
+                style={styles.footerRightButton}
+                text={{fontSize: 16, color: 'lightgray'}}
+                onPress={onRestClick}
+                title="推迟"
+              />
+            )}
+            {(state === '休息' || state === '推迟') && (
+              <Button
+                style={styles.footerRightButton}
+                text={{fontSize: 16, color: 'lightgray'}}
+                onPress={onRestClick}
+                title="休息"
+              />
+            )}
+            {(state === '开始铃' || state === '推迟') && (
+              <Button
+                style={styles.footerRightButton}
+                text={{fontSize: 16, color: 'lightgray'}}
+                onPress={onIgnoreClick}
+                title="忽略"
+              />
+            )}
+            {state === '结束铃' && (
+              <Button
+                style={styles.footerRightButton}
+                text={{fontSize: 16, color: 'lightgray'}}
+                onPress={onRestClick}
+                title="延迟"
+              />
+            )}
+            <Button
+              style={styles.footerRightButton}
+              text={{fontSize: 16, color: 'lightgray'}}
+              // onPress={onRestClick}
+              title="设置"
+            />
+          </View>
         </View>
       </View>
     </SafeAreaView>
@@ -53,10 +140,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   datetime: {
+    height: 96,
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     flexDirection: 'row',
+    justifyContent: 'space-between',
   },
   dateView: {
     display: 'flex',
@@ -69,7 +157,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   countdownText: {
-    fontSize: 50,
+    fontSize: 48,
     textAlign: 'right',
     fontWeight: '500',
     color: 'lightgray',
@@ -77,30 +165,74 @@ const styles = StyleSheet.create({
   time: {
     flex: 1,
     display: 'flex',
-    alignItems: 'center',
+    flexDirection: 'row',
+    alignItems: 'stretch',
     justifyContent: 'center',
   },
   timeView: {
-    backgroundColor: '#333',
+    backgroundColor: '#3f3f3f',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 8,
-    padding: 16,
-    paddingLeft: 32,
-    paddingRight: 32,
+    paddingHorizontal: 32,
   },
   timeText: {
     fontSize: 120,
     color: 'ghostwhite',
     textAlign: 'center',
   },
-  button: {
-    minHeight: 64,
+  footer: {
+    height: 96,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'flex-end',
   },
-  buttonText: {
-    fontSize: 16,
+  footerLeft: {
+    flex: 1,
+    display: 'flex',
+    justifyContent: 'flex-end',
+  },
+  footerLeftText: {
+    fontSize: 14,
     color: 'darkgray',
+  },
+  textHighlight: {
+    fontSize: 20,
+    color: 'crimson',
+    paddingHorizontal: 8,
+  },
+  footerCenter: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 32,
+  },
+  footerCenterButton: {
+    display: 'flex',
+    backgroundColor: 'crimson',
+    minHeight: 64,
+    width: '100%',
+  },
+  footerRight: {
+    flex: 1,
+    display: 'flex',
+  },
+  footerRightView: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+  },
+  footerRightButton: {
+    backgroundColor: '#2f2f2f',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    marginLeft: 8,
+    fontSize: 16,
   },
 });
 
