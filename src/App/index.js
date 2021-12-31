@@ -19,19 +19,19 @@ const App = () => {
   } = useApp();
 
   useRing({
-    src: require('../ring/滴答.mp3'),
+    src: require('../ring/clock.mp3'),
     paused: state !== '工作',
     volume: 0.8,
   });
 
   useRing({
-    src: require('../ring/教堂钟声.mp3'),
+    src: require('../ring/church-bells.mp3'),
     paused: state !== '结束铃',
     volume: 1.0,
   });
 
   useRing({
-    src: require('../ring/教堂钟声.mp3'),
+    src: require('../ring/church-bells.mp3'),
     paused: state !== '开始铃',
     volume: 0.8,
   });
