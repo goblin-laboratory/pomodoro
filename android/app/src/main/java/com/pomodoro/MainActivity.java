@@ -14,6 +14,13 @@ public class MainActivity extends ReactActivity {
     return "pomodoro";
   }
 
+  // @Override
+  // protected void onCreate(Bundle savedInstanceState) {
+  //   super.onCreate(savedInstanceState);
+  //   setContentView(R.layout.activity_main);
+  //   getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+  // }
+
   @Override
   public void onWindowFocusChanged(boolean hasFocus) {
     super.onWindowFocusChanged(hasFocus);
