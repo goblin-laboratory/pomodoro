@@ -18,19 +18,35 @@ const changePlayState = (sound, paused) => {
   }
 };
 
+function release(sound) {
+  sound.pause();
+  sound.stop();
+  sound.release();
+}
+
 function useRing({src, paused, volume = 1.0}) {
   const ref = React.useRef({volume});
 
   React.useEffect(() => {
+    return () => {
+      ref.current = {};
+    };
+  }, []);
+
+  React.useEffect(() => {
     if (ref.current.sound) {
-      ref.current.sound.pause();
-      ref.current.sound.stop();
-      ref.current.sound.release();
+      release(ref.current.sound);
       ref.current.sound = null;
     }
+    ref.current.src = src;
     const sound = new Sound(src, errMsg => {
       if (errMsg) {
         console.log('failed to load the sound', errMsg);
+        ref.current.sound = null;
+        return;
+      }
+      if (src !== ref.current.src) {
+        release(ref.current.sound);
         ref.current.sound = null;
         return;
       }
