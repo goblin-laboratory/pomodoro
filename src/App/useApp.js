@@ -185,7 +185,7 @@ function useApp() {
   React.useEffect(() => {
     const id = global.setInterval(() => {
       update();
-    }, 200);
+    }, 400);
     return () => {
       global.clearInterval(id);
     };
@@ -211,7 +211,6 @@ function useApp() {
       count: 0,
       countdownText: '00:00',
     };
-    // TODO: 休息也显示倒计时
     ref.current.countdown = getRestCountdown(ref.current.datetime);
     dispatch({type: 'update', payload});
   }, [dispatch, date, getRestCountdown]);
