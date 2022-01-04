@@ -1,23 +1,6 @@
 import React from 'react';
 import Sound from 'react-native-sound';
 
-const changePlayState = (sound, paused) => {
-  if (paused) {
-    sound.pause();
-    sound.setCurrentTime(0.0);
-  } else {
-    sound.setNumberOfLoops(-1);
-    sound.setCurrentTime(0.0);
-    sound.play(success => {
-      if (success) {
-        console.log('successfully finished playing');
-      } else {
-        console.log('playback failed due to audio decoding errors');
-      }
-    });
-  }
-};
-
 function release(sound) {
   sound.pause();
   sound.stop();
@@ -26,6 +9,48 @@ function release(sound) {
 
 function useRing({src, paused, volume = 1.0}) {
   const ref = React.useRef({volume});
+
+  const play = React.useCallback(() => {
+    if (!ref.current.src) {
+      return;
+    }
+    const current = ref.current.src;
+    const sound = new Sound(current, errMsg => {
+      if (errMsg) {
+        console.log('failed to load the sound', errMsg);
+        ref.current.sound = null;
+        return;
+      }
+      if (current !== ref.current.src) {
+        release(sound);
+        ref.current.sound = null;
+        return;
+      }
+      ref.current.sound = sound;
+      sound.setNumberOfLoops(-1);
+      ref.current.sound.setVolume(ref.current.volume);
+      if (!ref.current.paused) {
+        sound.play(success => {
+          if (success) {
+            console.log('successfully finished playing');
+          } else {
+            console.log('playback failed due to audio decoding errors');
+          }
+          release(sound);
+          play();
+        });
+      }
+      // sound.play(success => {
+      //   if (success) {
+      //     console.log('successfully finished playing');
+      //   } else {
+      //     console.log('playback failed due to audio decoding errors');
+      //   }
+      //   release(sound);
+      //   play();
+      // });
+    });
+  }, []);
 
   React.useEffect(() => {
     return () => {
@@ -39,22 +64,8 @@ function useRing({src, paused, volume = 1.0}) {
       ref.current.sound = null;
     }
     ref.current.src = src;
-    const sound = new Sound(src, errMsg => {
-      if (errMsg) {
-        console.log('failed to load the sound', errMsg);
-        ref.current.sound = null;
-        return;
-      }
-      if (src !== ref.current.src) {
-        release(ref.current.sound);
-        ref.current.sound = null;
-        return;
-      }
-      ref.current.sound = sound;
-      ref.current.sound.setVolume(ref.current.volume);
-      changePlayState(ref.current.sound, ref.current.paused);
-    });
-  }, [src]);
+    play();
+  }, [src, play]);
 
   React.useEffect(() => {
     ref.current.volume = volume;
@@ -68,8 +79,24 @@ function useRing({src, paused, volume = 1.0}) {
     if (!ref.current.sound) {
       return;
     }
-    changePlayState(ref.current.sound, paused);
-  }, [paused]);
+    if (paused) {
+      ref.current.sound.pause();
+      ref.current.sound.setCurrentTime(0.0);
+    } else {
+      ref.current.sound.setCurrentTime(0.0);
+      ref.current.sound.play(success => {
+        if (success) {
+          console.log('successfully finished playing');
+        } else {
+          console.log('playback failed due to audio decoding errors');
+        }
+        if (ref.current.sound) {
+          release(ref.current.sound);
+        }
+        play();
+      });
+    }
+  }, [paused, play]);
 }
 
 export default useRing;
