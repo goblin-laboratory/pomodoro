@@ -3,6 +3,7 @@ import {SafeAreaView, StyleSheet, Text, View, Pressable} from 'react-native';
 import useApp from './useApp';
 import useRing from '../ring/useRing';
 import Button from '../Button';
+import PressableContext from './PressableContext';
 
 const App = () => {
   const {
@@ -12,72 +13,67 @@ const App = () => {
     state,
     count,
     countdownText,
-    title,
+    // title,
     onPress,
     onCancelClick,
     onIgnoreClick,
   } = useApp();
 
   useRing({
+    src: require('../ring/school-bells.mp3'),
+    paused: state !== '开始铃',
+    // volume: 1.0,
+  });
+
+  useRing({
     src: require('../ring/clock.mp3'),
     paused: state !== '工作',
-    volume: 0.8,
+    // volume: 0.8,
   });
 
   useRing({
     src: require('../ring/church-bells.mp3'),
     paused: state !== '结束铃',
-    volume: 1.0,
-  });
-
-  useRing({
-    src: require('../ring/church-bells.mp3'),
-    paused: state !== '开始铃',
-    volume: 0.8,
+    // volume: 1.0,
   });
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.dateView}>
-          <Text style={styles.dateText}>{month}</Text>
-          <Text style={styles.dateText}>{date}</Text>
+        <View style={styles.topLeftView}>
+          <Text style={styles.topLeftText}>{month}</Text>
+          <Text style={styles.topLeftText}>{date}</Text>
         </View>
-        <View style={styles.countdownView}>
-          <Text style={styles.countdownText}>
-            {state} {countdownText}
-          </Text>
+        <View style={styles.topRightView}>
+          <Text style={styles.topRightText}>{time}</Text>
         </View>
       </View>
-      <View style={styles.time}>
-        <Pressable style={styles.timeView} onPress={onPress}>
-          <Text style={styles.timeText}>{time}</Text>
+      <View style={styles.main}>
+        <Pressable style={styles.mainView} onPress={onPress}>
+          <PressableContext
+            state={state}
+            countdownText={countdownText}
+            count={count}
+          />
         </Pressable>
       </View>
       <View style={styles.footer}>
         <View style={styles.footerLeft}>
-          <Text style={styles.footerLeftText}>
+          <Text style={styles.footerText}>
+            {state}
+            {/* <Text style={styles.textHighlight}>
+              &nbsp;&nbsp;{countdownText}
+            </Text> */}
+          </Text>
+        </View>
+        <View style={styles.footerCenter}>
+          <Text style={styles.footerText}>
             今天已完成
             <Text style={styles.textHighlight}>
               &nbsp;&nbsp;{count}&nbsp;&nbsp;
             </Text>
             个番茄时段
           </Text>
-          <Text style={styles.footerLeftText}>
-            离长休还有
-            <Text style={styles.textHighlight}>
-              &nbsp;&nbsp;{4 - (count % 4)}&nbsp;&nbsp;
-            </Text>
-            个番茄时段
-          </Text>
-        </View>
-        <View style={styles.footerCenter}>
-          <Button
-            style={styles.footerCenterButton}
-            text={{fontSize: 28, fontWeight: 'normal'}}
-            onPress={onPress}
-            title={title}
-          />
         </View>
         <View style={styles.footerRight}>
           <View style={styles.footerRightView}>
@@ -126,51 +122,39 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
   },
-  dateView: {
+  topLeftView: {
     flex: 1,
     display: 'flex',
   },
-  dateText: {
+  topLeftText: {
     fontSize: 16,
     color: 'darkgray',
   },
-  countdownView: {
+  topRightView: {
     flex: 1,
   },
-  countdownText: {
+  topRightText: {
     fontSize: 36,
     textAlign: 'right',
     fontWeight: '400',
     color: 'lightgray',
   },
-  time: {
+  main: {
     flex: 1,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'stretch',
     justifyContent: 'center',
   },
-  timeLeftView: {
-    flex: 1,
-  },
-  timeRightView: {
-    flex: 1,
-  },
-  timeView: {
-    backgroundColor: '#3f3f3f',
+  mainView: {
     display: 'flex',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
-    paddingHorizontal: 40,
-  },
-  timeText: {
-    fontSize: 120,
-    color: 'ghostwhite',
-    textAlign: 'center',
+    width: '60%',
   },
   footer: {
-    height: 84,
+    height: 64,
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -181,28 +165,18 @@ const styles = StyleSheet.create({
     display: 'flex',
     justifyContent: 'flex-end',
   },
-  footerLeftText: {
-    fontSize: 10,
+  footerText: {
+    fontSize: 16,
     color: 'darkgray',
   },
   textHighlight: {
-    fontSize: 20,
+    fontSize: 24,
     color: 'crimson',
     paddingHorizontal: 8,
   },
   footerCenter: {
     flex: 2,
-    display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 32,
-  },
-  footerCenterButton: {
-    display: 'flex',
-    backgroundColor: 'crimson',
-    minHeight: 56,
-    width: '100%',
+    textAlign: 'center',
   },
   footerRight: {
     flex: 2,
